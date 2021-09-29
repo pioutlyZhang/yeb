@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.study.server.mapper.AdminMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.study.server.pojo.Admin">
+        <result column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="phone" property="phone" />
+        <result column="telephone" property="telephone" />
+        <result column="address" property="address" />
+        <result column="enabled" property="enabled" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="userFace" property="userFace" />
+        <result column="remark" property="remark" />
+    </resultMap>
+    <resultMap id="AdminWithRole" type="com.study.server.pojo.Admin" extends="BaseResultMap">
+        <collection property="roles" ofType="com.study.server.pojo.Role">
+            <result column="rid" property="id"/>
+            <result column="rname" property="name"/>
+            <result column="rnameZh" property="nameZh" />
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id,
+        name, phone, telephone, address, enabled, username, password, userFace, remark
+    </sql>
+    
+    <select id="getRolesByAdminId" resultType="com.study.server.pojo.Role">
+        SELECT
+            r.id,
+            r.`name`,
+            r.nameZh
+        FROM
+            t_role r
+                LEFT JOIN t_admin_role ar ON r.id = ar.rid
+        WHERE
+            ar.adminId = #{id};
+    </select>
+    <select id="getAllAdmins" resultMap="AdminWithRole">
+        SELECT
+            a.*,
+            r.id rid,
+            r.`name` rname,
+            r.nameZh rnameZh
+        FROM
+            t_admin a,
+            t_admin_role ar,
+            t_role r
+        WHERE
+            a.id = ar.adminId
+          AND ar.rid = r.id
+          AND a.id != #{id} 
+        <if test="null!=keyword and ''!=keyword">
+            AND a.NAME LIKE CONCAT( '%', #{keyword}, '%' );
+        </if>
+    </select>
+</mapper>
